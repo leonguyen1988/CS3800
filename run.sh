@@ -2,4 +2,4 @@
 
 
 g++ *.cpp -o leo.out
-leo.out
+valgrind --leak-check=full -v ./leo.out

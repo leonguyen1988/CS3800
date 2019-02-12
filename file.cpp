@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <string>
 #include "file.hpp"
 
 using namespace std;
@@ -15,8 +16,9 @@ void root::setName(string selectedName)
     name = selectedName;
 }
 
-void root::setdate(time_t now)
+void root::setdate()
 {
+    
     date = now;
 }
 
@@ -58,3 +60,29 @@ bool root::getIsFile()
 {
     return isFile;
 }
+
+
+string root::convertcCharToBin(char digit)
+{
+   int number = digit - '0';
+   string permission[3] = {"R","W","X"};
+   string finalWord;
+   for(int element = 0; element < 3;element++)
+   {
+       if(number >= 0)
+       {
+           if(number % 2 ==0)
+           {
+               permission[element] = "-";
+           }
+           number  = number / 2;
+       }
+   }
+
+    for(int element =2 ; element >=0;element--)
+    {
+        finalWord +=permission[element];
+    }
+    return finalWord;
+} 
+
