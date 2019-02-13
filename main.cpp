@@ -2,40 +2,25 @@
 #include <vector>
 #include <sstream>
 #include <time.h> 
-#include <stdio.h>
+#include <cstdio>
 #include "Tree.hpp"
-#include "file.hpp"
+#include "systemOS.hpp"
 using namespace std;
 
-const string USERDEFUALT = "user@LeoOS: ";
-void printError()
-{
-    printf("%s","Incorrect Syntax");
-}
+const std::string USERDEFUALT = "user@LeoOS: ";
+
 int main(){
     vector<string> words;
-    root create;
-    create.setName("~");
-    Tree<root> tree{create};
-
-    
-    Tree<root>::Node* newRoot;
-    Tree<root>::Node* temp;
-    Tree<root>::Node* parent;
-    // // cout<<current->GetData().getName();
-
-    // create.setName("leo");
-    // tree.GetRoot()->AppendChild(create);
-    // newRoot = tree.GetRoot()->GetFirstChild();
-    // cout<< newRoot->GetParent()->GetData().getName()<<endl; 
-    // create.setName("alo");
-    // newRoot = tree.GetRoot()->GetFirstChild()->AppendChild(create);
-    // cout<< newRoot->GetParent()->GetData().getName();
-    // create.setName("asdadsad");
-    // tree.GetRoot()->AppendChild(create);
+    systemOS Linuxsystem;
+    Linuxsystem.setName("~");
+    Tree<systemOS> tree{Linuxsystem};
+    Tree<systemOS>::Node* newRoot;
+    Tree<systemOS>::Node* temp;
+    Tree<systemOS>::Node* parent;
     newRoot = tree.GetRoot();
     parent = NULL;
-    // cout<<newRoot->GetData().getName();
+    Linuxsystem.setName("Linux");
+    newRoot->AppendChild(Linuxsystem);
     bool quit = false;
 
     string command;
@@ -70,7 +55,7 @@ int main(){
                 * */
                 else
                 {
-                    vector<root> getDirection;
+                    vector<systemOS> getDirection;
                     temp = newRoot;
                     while(temp != tree.GetRoot())
                     {
@@ -95,22 +80,27 @@ int main(){
                     {
                         if(words[1] == "-l")
                         {
-                            printf("%s \n","pass");
+                            temp = NULL;
+                            temp = newRoot->GetFirstChild();
+                            for(int child = 0;child < newRoot->GetChildCount();child++)
+                            {  
+                                Linuxsystem.printFullDirectory(temp);
+                                temp = temp->GetNextSibling();
+                            }
+                            
                         }
                         else
                         {
-                            printError();
+                            Linuxsystem.printError();
                         }
                     }
                     else
                     {
-                        temp = NULL;
                         temp = newRoot->GetFirstChild();
-                        cout<< temp->GetData().getName();
-                        for(int i = 0; i< newRoot->GetChildCount()-1;i++)
+                        for(int i = 0; i< newRoot->GetChildCount();i++)
                         {
-                            temp = temp->GetNextSibling();
-                            if(temp->GetData().getIsFile() == true)
+                            cout<< temp->GetData().getName();
+                            if(temp->GetData().getIsFolder() == true)
                             {
                                 cout<<"/ ";
                             }
@@ -118,32 +108,16 @@ int main(){
                             {
                                 cout<<" ";
                             }
-                            
-                            cout<< temp->GetData().getName();
+                            temp = temp->GetNextSibling();
                         }
-                        if(temp->GetData().getIsFile() == true)
-                        {
-                            cout<<"/\n";
-                        }
-                        else
-                        {
-                            cout<<endl;
-                        }
-                        temp = NULL;
+                        cout<<endl;
                     }
                 }
                
             }
-            else if (words[0] == "mkdir")
+            else if (words[0] == "mkdir" and words[1].length() !=0 )
             {
-                root tempFile;
-                long size = rand() %1000 +1000000;
-                tempFile.setName(words[1]);
-                tempFile.setdate(time(0));
-                tempFile.setFileSize(size);
-                tempFile.setUser("student");
-                tempFile.setIsFile(1);
-                newRoot->AppendChild(tempFile);   
+                newRoot->AppendChild(Linuxsystem.addNode(words[1],1));
             }
             else if(words[0] == "quit" 
                     || words[0] =="exit")
@@ -171,24 +145,105 @@ int main(){
                 }
                 else
                 {
-                    temp = newRoot->GetFirstChild();
-                    for(int i =0; i < newRoot->GetChildCount(); i++)
+                    if(!Linuxsystem.isFolder(newRoot,words[1]))
                     {
-                       if(temp->GetData().getName() == words[1])
-                       {
-                           parent = newRoot;
-                           newRoot = NULL;
-                           newRoot = temp;
-                           temp = NULL;
-                       }
-                       else
-                       {
-                           temp = temp->GetNextSibling();
-                       }                     
+                        cout<<"No such file or directory"<<endl;
                     }
-                    cout<<newRoot->GetData().getName()<<endl;
+                    else
+                    {
+                      temp = newRoot->GetFirstChild();
+                        for(int i =0; i < newRoot->GetChildCount(); i++)
+                        {
+                            if(temp->GetData().getName() == words[1])
+                            {
+                                if(!temp->GetData().getIsFolder())
+                                {
+                                    cout<<" Bad command!!"<<endl;
+                                    break;
+                                }
+                                else
+                                    {
+                                        parent = newRoot;
+                                        newRoot = NULL;
+                                        newRoot = temp;
+                                        temp = NULL;
+                                    }
+                            }
+                            else
+                            {
+                                temp = temp->GetNextSibling();
+                            }                     
+                        }   
+                    }
+                       
                 }
+            }
+            else if(words[0] == "chmod")
+            {
+                if(words[1].length()==3)
+                {
+                    string selectedName = words[2];
+                    bool found = false;
+                    if(newRoot->HasChildren())
+                    {
+                        temp = newRoot->GetFirstChild();
+                        for(int child = 0;child < newRoot->GetChildCount();child++)
+                        {
+                            if(temp->GetData().getName() == selectedName)
+                            {
+
+                                temp = Linuxsystem.UpdatePermission(temp,words[1]);
+                                found = true;
+                                break;
+                            }
+                            else
+                            {
+                                temp = temp->GetNextSibling();
+                            }
+
+                        }
+                    }
+                }
+                else
+                {
+                    Linuxsystem.printError();
+                }
+            }
+            else if(words[0] == "rmdir")
+            {
+                if(Linuxsystem.isFolder(newRoot,words[1]))
+                {
+                    newRoot = Linuxsystem.Delete(newRoot,words[1]);
+                }
+                else
+                {
+                    cout<<"Bad command"<<endl;
+                 }
+                
             } 
+            else if(words[0] == "touch")
+            {
+                if (!Linuxsystem.isExist(newRoot,words[1]))
+                {
+                     newRoot->AppendChild(Linuxsystem.addNode(words[1],0));
+                }
+            }
+            else if(words[0] == "rm")
+            {
+                if(!Linuxsystem.isFolder(newRoot,words[1]))
+                {
+                    newRoot= Linuxsystem.Delete(newRoot,words[1]);
+                }
+                else
+                {
+                    cout<<"Bad Command!!"<<endl;
+                }
+            }
+            else
+            {
+               Linuxsystem.printError();
+            }
+            
         }catch (string param)
         {
             cout<<param;
